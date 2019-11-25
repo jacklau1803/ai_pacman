@@ -9,80 +9,84 @@ return NOT_POSSIBLE
 
 NOT_POSSIBLE = None
 
+
 def question2():
     """
-    [Enter a description of what you did here.]
+    Tested different values in terminal one by one.
     """
 
     answerDiscount = 0.9
-    answerNoise = 0.2
+    answerNoise = 0.0
 
     return answerDiscount, answerNoise
 
+
 def question3a():
     """
-    [Enter a description of what you did here.]
+    Tested different values in terminal one by one.
     """
 
-    answerDiscount = 0.9
-    answerNoise = 0.2
+    answerDiscount = 0.01
+    answerNoise = 0.0
     answerLivingReward = 0.0
 
     return answerDiscount, answerNoise, answerLivingReward
+
 
 def question3b():
     """
-    [Enter a description of what you did here.]
+    Tested different values in terminal one by one.
     """
 
-    answerDiscount = 0.9
+    answerDiscount = 0.2
     answerNoise = 0.2
-    answerLivingReward = 0.0
+    answerLivingReward = -0.1
 
     return answerDiscount, answerNoise, answerLivingReward
+
 
 def question3c():
     """
-    [Enter a description of what you did here.]
+    Tested different values in terminal one by one.
     """
 
-    answerDiscount = 0.9
-    answerNoise = 0.2
+    answerDiscount = 0.5
+    answerNoise = 0.0
     answerLivingReward = 0.0
 
     return answerDiscount, answerNoise, answerLivingReward
+
 
 def question3d():
     """
-    [Enter a description of what you did here.]
+    Tested different values in terminal one by one.
     """
 
     answerDiscount = 0.9
-    answerNoise = 0.2
+    answerNoise = 0.5
     answerLivingReward = 0.0
 
     return answerDiscount, answerNoise, answerLivingReward
+
 
 def question3e():
     """
-    [Enter a description of what you did here.]
+    Tested different values in terminal one by one.
     """
 
-    answerDiscount = 0.9
-    answerNoise = 0.2
-    answerLivingReward = 0.0
+    answerDiscount = 1
+    answerNoise = 0
+    answerLivingReward = 10
 
     return answerDiscount, answerNoise, answerLivingReward
 
+
 def question6():
     """
-    [Enter a description of what you did here.]
+    Tested different values in terminal one by one.
     """
+    return NOT_POSSIBLE
 
-    answerEpsilon = 0.3
-    answerLearningRate = 0.5
-
-    return answerEpsilon, answerLearningRate
 
 if __name__ == '__main__':
     questions = [

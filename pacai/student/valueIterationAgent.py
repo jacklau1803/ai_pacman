@@ -1,6 +1,7 @@
 from pacai.agents.learning.value import ValueEstimationAgent
 from pacai.util import counter
 
+
 class ValueIterationAgent(ValueEstimationAgent):
     """
     A value iteration agent.
@@ -31,7 +32,7 @@ class ValueIterationAgent(ValueEstimationAgent):
     you should return None.
     """
 
-    def __init__(self, index, mdp, discountRate = 0.9, iters = 100, **kwargs):
+    def __init__(self, index, mdp, discountRate=0.9, iters=100, **kwargs):
         super().__init__(index)
 
         self.mdp = mdp
@@ -39,8 +40,15 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.iters = iters
         self.values = counter.Counter()  # A Counter is a dict with default 0
 
-        # Compute the values here.
-        raise NotImplementedError()
+        states = mdp.getStates()
+        for i in range(iters):
+            currValue = counter.Counter()
+            for state in states:
+                action = self.getPolicy(state)
+                if action is not None:
+                    currValue[state] = self.getQValue(state, action)
+
+            self.values = currValue
 
     def getValue(self, state):
         """
@@ -55,3 +63,24 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
 
         return self.getPolicy(state)
+
+    def getQValue(self, state, action):
+        result = 0
+        tps = self.mdp.getTransitionStatesAndProbs(state, action)
+        for nextState, probs in tps:
+            result += probs * (self.mdp.getReward(state, action, nextState)
+                               + (self.discountRate * self.values[nextState]))
+        return result
+
+    def getPolicy(self, state):
+        actions = self.mdp.getPossibleActions(state)
+        if len(actions) == 0:
+            return None
+        maxQ = self.getQValue(state, actions[0])
+        maxAction = actions[0]
+        for action in actions:
+            q = self.getQValue(state, action)
+            if maxQ < q:
+                maxQ = q
+                maxAction = action
+        return maxAction

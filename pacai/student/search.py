@@ -1,6 +1,10 @@
 """
 In this file, you will implement generic search algorithms which are called by Pacman agents.
 """
+from pacai.util.stack import Stack
+from pacai.util.queue import Queue
+from pacai.util.priorityQueue import PriorityQueue
+
 
 def depthFirstSearch(problem):
     """
@@ -18,29 +22,96 @@ def depthFirstSearch(problem):
     ```
     """
 
-    # *** Your Code Here ***
-    raise NotImplementedError()
+    fringe = Stack()
+    visited = list()
+    fringe.push((problem.startingState(), ()))
+    while not fringe.isEmpty():
+        curr = fringe.pop()
+        if problem.isGoal(curr[0]):
+            return list(curr[1])
+        if not curr[0] in visited:
+            visited.append(curr[0])
+            nextSteps = problem.successorStates(curr[0])
+            for i in nextSteps:
+                path = list(curr[1])
+                path.append(i[1])
+                next = (i[0], tuple(path))
+                if not i[0] in visited:
+                    fringe.push(next)
+    return None
+
 
 def breadthFirstSearch(problem):
     """
     Search the shallowest nodes in the search tree first. [p 81]
     """
 
-    # *** Your Code Here ***
-    raise NotImplementedError()
+    fringe = Queue()
+    visited = list()
+    fringe.push((problem.startingState(), ()))
+    while not fringe.isEmpty():
+        curr = fringe.pop()
+        if problem.isGoal(curr[0]):
+            return list(curr[1])
+        if not curr[0] in visited:
+            visited.append(curr[0])
+            nextSteps = problem.successorStates(curr[0])
+            for i in nextSteps:
+                path = list(curr[1])
+                path.append(i[1])
+                next = (i[0], tuple(path))
+                if not i[0] in visited:
+                    fringe.push(next)
+    return None
+
 
 def uniformCostSearch(problem):
     """
     Search the node of least total cost first.
     """
 
-    # *** Your Code Here ***
-    raise NotImplementedError()
+    fringe = PriorityQueue()
+    visited = list()
+    fringe.push((problem.startingState(), None, None, list()), 0)
+    while not fringe.isEmpty():
+        curr = fringe.pop()
+        if problem.isGoal(curr[0]):
+            return curr[3]
+        if not curr[0] in visited:
+            visited.append(curr[0])
+            nextSteps = problem.successorStates(curr[0])
+            for i in nextSteps:
+                if not i[0] in visited:
+                    path = list(curr[3])
+                    path.append(i[1])
+                    fringe.push((i[0], i[1], i[2], path),
+                                problem.actionsCost(path))
+    return None
+
 
 def aStarSearch(problem, heuristic):
     """
     Search the node that has the lowest combined cost and heuristic first.
     """
 
-    # *** Your Code Here ***
-    raise NotImplementedError()
+    fringe = PriorityQueue()
+    visited = list()
+    fringe.push((problem.startingState(), ()),
+                heuristic(problem.startingState(), problem))
+    while not fringe.isEmpty():
+        curr = fringe.pop()
+        if problem.isGoal(curr[0]):
+            return list(curr[1])
+        if not curr[0] in visited:
+            visited.append(curr[0])
+            nextSteps = problem.successorStates(curr[0])
+            for i in nextSteps:
+                path = list(curr[1])
+                path.append(i[1])
+                next = (i[0], tuple(path))
+                if not i[0] in visited:
+                    path = list(curr[1])
+                    path.append(i[1])
+                    fringe.push(next, problem.actionsCost(
+                        path) + heuristic(i[0], problem))
+    return None

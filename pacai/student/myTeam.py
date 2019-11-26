@@ -1,7 +1,6 @@
 import random
 from pacai.util import reflection
 from pacai.agents.capture.reflex import ReflexCaptureAgent
-from pacai.agents.search.multiagent import MultiAgentSearchAgent
 from pacai.util import counter
 from pacai.core.directions import Directions
 
@@ -103,7 +102,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             minDistance = min([self.getMazeDistance(myPos, food)
                                for food in foodList])
             features['distanceToFood'] = minDistance
-        print(features)
         return features
 
     def getWeights(self, gameState, action):
@@ -113,21 +111,27 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         }
 
 
-class AlphaBetaAgent(MultiAgentSearchAgent):
+class AlphaBetaAgent(ReflexCaptureAgent):
 
     def __init__(self, index, **kwargs):
         super().__init__(index)
 
     def getAction(self, state):
-        return self.AlphaBeta(state, self.getTreeDepth(), self.index, float('-inf'), float('inf'))[1]
+        result = self.AlphaBeta(state, 2, self.index,
+                                float('-inf'), float('inf'))[1]
+        if result == 'Stop':
+            c = random.choice(state.getLegalActions(self.index))
+            return c
+        else:
+            return result
 
     def AlphaBeta(self, state, depth, agent, alpha, beta):
         if agent == state.getNumAgents():
             depth -= 1
             agent = 0
         if state.isOver() or depth == 0:
-            eval_func = self.getEvaluationFunction()
-            return [eval_func(state), None]
+            val_act = [self.evaluationFunction(state), None]
+            return val_act
         if agent == 0:
             val_act = [float('-inf'), None]
             for action in state.getLegalActions(agent):
@@ -151,3 +155,63 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     return val_act
                 beta = min(beta, score[0])
         return val_act
+
+    def evaluationFunction(self, state):
+        if state.isOnBlueTeam(self.index):
+            foods = state.getRedFood().asList()
+            pos = state.getAgentPosition(self.index)
+            # caps = state.getRedCapsules()
+            # ghosts = [state.getAgentPosition(x)
+            #           for x in state.getRedTeamIndices()]
+            # g_dis = 0
+            f_dis = float('inf')
+            # c_dis = float('inf')
+            # g_dis = min([self.getMazeDistance(pos, ghost)
+            #              for ghost in ghosts])
+            f_dis = min([self.getMazeDistance(pos, food) for food in foods])
+            # c_dis = min([self.getMazeDistance(pos, capsule)
+            #              for capsule in caps])
+            # if g_dis == 0:
+            #     g_dis += 1
+            score = f_dis
+        else:
+            foods = state.getBlueFood().asList()
+            pos = state.getAgentPosition(self.index)
+            # caps = state.getBlueCapsules()
+            # ghosts = [state.getAgentPosition(x)
+            #           for x in state.getBlueTeamIndices()]
+            # g_dis = 0
+            f_dis = float('inf')
+            # c_dis = float('inf')
+            # g_dis = min([self.getMazeDistance(pos, ghost)
+            #              for ghost in ghosts])
+            f_dis = min([self.getMazeDistance(pos, food) for food in foods])
+            # c_dis = min([self.getMazeDistance(pos, capsule)
+            #              for capsule in caps])
+            # if g_dis == 0:
+            #     g_dis += 1
+            score = f_dis
+        # p = currentGameState.getAgentPosition(self.index)
+        # foods = currentGameState.getFood().asList()
+        # capsules = currentGameState.getCapsules()
+        # ghostStates = currentGameState.getAgentPosition(self.index)
+        # gp = [ghost.getPosition() for ghost in ghostStates]
+        # scaredTimes = [ghost.getScaredTimer() for ghost in ghostStates]
+        # g_dis = 0
+        # f_dis = float('inf')
+        # c_dis = float('inf')
+        # h_dis = float('inf')
+        # for food in foods:
+        #     f_dis = min(f_dis, manhattan(p, food))
+        # for capsule in capsules:
+        #     c_dis = min(c_dis, manhattan(p, capsule))
+        # for i in range(len(scaredTimes)):
+        #     if scaredTimes[i] > 0:
+        #         h_dis = min(h_dis, manhattan(p, gp[i]))
+        #     else:
+        #         g_dis += manhattan(p, gp[i])
+        # if g_dis == 0:
+        #     g_dis += 1
+        # score = currentGameState.getScore() + 1 / f_dis + 1 / \
+        #     h_dis + 1 / c_dis - 1 / g_dis
+        return score

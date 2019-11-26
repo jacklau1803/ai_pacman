@@ -4,6 +4,7 @@ from pacai.agents.base import BaseAgent
 from pacai.core import distanceCalculator
 from pacai.util import util
 
+
 class CaptureAgent(BaseAgent):
     """
     A base class for capture agents.
@@ -13,7 +14,7 @@ class CaptureAgent(BaseAgent):
     and implement `CaptureAgent.chooseAction`.
     """
 
-    def __init__(self, index, timeForComputing = 0.1):
+    def __init__(self, index, timeForComputing=0.1):
         super().__init__(index)
 
         # Whether or not you're on the red team
@@ -38,7 +39,8 @@ class CaptureAgent(BaseAgent):
         """
 
         self.red = gameState.isOnRedTeam(self.index)
-        self.distancer = distanceCalculator.Distancer(gameState.getInitialLayout())
+        self.distancer = distanceCalculator.Distancer(
+            gameState.getInitialLayout())
 
         self.distancer.getMazeDistances()
 

@@ -39,6 +39,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
         myState = successor.getAgentState(self.index)
         myPos = myState.getPosition()
+        numBlueFood = 20
+        numRedFood = 20
 
         # Computes whether we're on defense (1) or offense (0).
         features['onDefense'] = 1
@@ -59,10 +61,18 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         else:
             if state.isOnBlueTeam(self.index):
                 foods = state.getBlueFood().asList()
-                features['stayFront'] = self.getMazeDistance(myPos, foods[0])
+                if len(foods) >= numBlueFood:
+                    features['stayFront'] = self.getMazeDistance(myPos, foods[0])
+                else:
+                    capsules = state.getBlueCapsules()
+                    features['stayCap'] = self.getMazeDistance(myPos, capsules[0])
             else:
                 foods = state.getRedFood().asList()
-                features['stayFront'] = self.getMazeDistance(myPos, foods[-1])
+                if len(foods) >= numRedFood:
+                    features['stayFront'] = self.getMazeDistance(myPos, foods[-1])
+                else:
+                    capsules = state.getRedCapsules()
+                    features['stayCap'] = self.getMazeDistance(myPos, capsules[0])
 
         if (action == Directions.STOP):
             features['stop'] = 1
@@ -81,7 +91,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             'invaderDistance': -10,
             'stop': -100,
             'reverse': -2,
-            'stayFront': -1
+            'stayFront': -1,
+            'stayCap': -1
         }
 
 class AlphaBetaAgent(ReflexCaptureAgent):

@@ -5,8 +5,8 @@ from pacai.core.directions import Directions
 
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first='pacai.student.myTeam.DefensiveReflexAgent',
-               second='pacai.student.myTeam.AlphaBetaAgent'):
+               first='pacai.student.lcl.DefensiveReflexAgent',
+               second='pacai.student.lcl.AlphaBetaAgent'):
     """
     This function should return a list of two agents that will form the capture team,
     initialized using firstIndex and secondIndex as their agent indexed.

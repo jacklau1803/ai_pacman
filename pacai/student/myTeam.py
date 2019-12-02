@@ -77,72 +77,40 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             'reverse': -2
         }
 
-
-class OffensiveReflexAgent(ReflexCaptureAgent):
-    """
-    A reflex agent that seeks food.
-    This agent will give you an idea of what an offensive agent might look like,
-    but it is by no means the best or only way to build an offensive agent.
-    """
-
-    def __init__(self, index, **kwargs):
-        super().__init__(index)
-
-    def getFeatures(self, state, action):
-        features = counter.Counter()
-        successor = self.getSuccessor(state, action)
-        features['successorScore'] = self.getScore(successor)
-
-        # Compute distance to the nearest food.
-        foodList = self.getFood(successor).asList()
-
-        # This should always be True, but better safe than sorry.
-        if (len(foodList) > 0):
-            myPos = successor.getAgentState(self.index).getPosition()
-            minDistance = min([self.getMazeDistance(myPos, food)
-                               for food in foodList])
-            features['distanceToFood'] = minDistance
-        return features
-
-    def getWeights(self, state, action):
-        return {
-            'successorScore': 100,
-            'distanceToFood': -1
-        }
-
-
 class AlphaBetaAgent(ReflexCaptureAgent):
 
     def __init__(self, index, **kwargs):
         super().__init__(index)
 
     def evaluationFunction(self, state):
-        if state.isOnBlueTeam(3):
+        pos = state.getAgentPosition(self.index)
+        g_dis = 0
+        f_dis = 0
+        if state.isOnBlueTeam(self.index):
+            if state.isOnRedSide(self.index):
+                ghosts = [state.getAgentPosition(g)
+                        for g in state.getRedTeamIndices()]
             foods = state.getRedFood().asList()
-            pos = state.getAgentPosition(3)
-            ghosts = [state.getAgentPosition(x)
-                      for x in state.getRedTeamIndices()]
-            g_dis = float('inf')
-            f_dis = 0
+            capsules = state.getRedCapsules()
             for ghost in ghosts:
                 g_dis += self.getMazeDistance(pos, ghost)
             for food in foods:
                 f_dis += self.getMazeDistance(pos, food)
             nf = min([self.getMazeDistance(pos, food) for food in foods])
+            ng = min([self.getMazeDistance(pos, ghost) for ghost in ghosts])
             score = 1 / nf - len(foods)
         else:
             foods = state.getBlueFood().asList()
-            pos = state.getAgentPosition(self.index)
+            capsules = state.getBlueCapsules()
             ghosts = [state.getAgentPosition(x)
-                      for x in state.getBlueTeamIndices()]
-            g_dis = float('inf')
-            f_dis = 0
+                        for x in state.getBlueTeamIndices()]
             for ghost in ghosts:
                 g_dis += self.getMazeDistance(pos, ghost)
             for food in foods:
                 f_dis += self.getMazeDistance(pos, food)
             nf = min([self.getMazeDistance(pos, food) for food in foods])
-            score = 0
+            ng = min([self.getMazeDistance(pos, ghost) for ghost in ghosts])
+            score = 1 / nf - len(foods)
         return score
 
     def getAction(self, state):
@@ -166,31 +134,11 @@ class AlphaBetaAgent(ReflexCaptureAgent):
             minimax.sort(key=lambda tup: tup[0], reverse=True)
             return minimax[0]
         else:
-            minimax = [(self.minimaxDecision(state.generateSuccessor(
-                agent, action), depth, agent + 1, init, count + 1)[0], action) for action in actions]
+            if abs(init - agent - 1) != 2:
+                minimax = [(self.minimaxDecision(state.generateSuccessor(
+                    agent, action), depth, agent + 1, init, count + 1)[0], action) for action in actions]
+            else:
+                minimax = [(self.minimaxDecision(state.generateSuccessor(
+                    agent, action), depth, agent + 2, init, count + 1)[0], action) for action in actions]
             minimax.sort(key=lambda tup: tup[0])
             return minimax[0]
-
-        # p = currentstate.getAgentPosition(self.index)
-        # foods = currentstate.getFood().asList()
-        # capsules = currentstate.getCapsules()
-        # ghostStates = currentstate.getAgentPosition(self.index)
-        # gp = [ghost.getPosition() for ghost in ghostStates]
-        # scaredTimes = [ghost.getScaredTimer() for ghost in ghostStates]
-        # g_dis = 0
-        # f_dis = float('inf')
-        # c_dis = float('inf')
-        # h_dis = float('inf')
-        # for food in foods:
-        #     f_dis = min(f_dis, manhattan(p, food))
-        # for capsule in capsules:
-        #     c_dis = min(c_dis, manhattan(p, capsule))
-        # for i in range(len(scaredTimes)):
-        #     if scaredTimes[i] > 0:
-        #         h_dis = min(h_dis, manhattan(p, gp[i]))
-        #     else:
-        #         g_dis += manhattan(p, gp[i])
-        # if g_dis == 0:
-        #     g_dis += 1
-        # score = currentstate.getScore() + 1 / f_dis + 1 / \
-        #     h_dis + 1 / c_dis - 1 / g_dis

@@ -34,9 +34,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def __init__(self, index, **kwargs):
         super().__init__(index)
 
-    def getFeatures(self, gameState, action):
+    def getFeatures(self, state, action):
         features = counter.Counter()
-        successor = self.getSuccessor(gameState, action)
+        successor = self.getSuccessor(state, action)
 
         myState = successor.getAgentState(self.index)
         myPos = myState.getPosition()
@@ -61,14 +61,14 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         if (action == Directions.STOP):
             features['stop'] = 1
 
-        rev = Directions.REVERSE[gameState.getAgentState(
+        rev = Directions.REVERSE[state.getAgentState(
             self.index).getDirection()]
         if (action == rev):
             features['reverse'] = 1
 
         return features
 
-    def getWeights(self, gameState, action):
+    def getWeights(self, state, action):
         return {
             'numInvaders': -1000,
             'onDefense': 100,
@@ -88,9 +88,9 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     def __init__(self, index, **kwargs):
         super().__init__(index)
 
-    def getFeatures(self, gameState, action):
+    def getFeatures(self, state, action):
         features = counter.Counter()
-        successor = self.getSuccessor(gameState, action)
+        successor = self.getSuccessor(state, action)
         features['successorScore'] = self.getScore(successor)
 
         # Compute distance to the nearest food.
@@ -104,7 +104,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             features['distanceToFood'] = minDistance
         return features
 
-    def getWeights(self, gameState, action):
+    def getWeights(self, state, action):
         return {
             'successorScore': 100,
             'distanceToFood': -1
@@ -116,85 +116,65 @@ class AlphaBetaAgent(ReflexCaptureAgent):
     def __init__(self, index, **kwargs):
         super().__init__(index)
 
-    def getAction(self, state):
-        result = self.AlphaBeta(state, 2, self.index,
-                                float('-inf'), float('inf'))[1]
-        if result == 'Stop':
-            c = random.choice(state.getLegalActions(self.index))
-            return c
-        else:
-            return result
-
-    def AlphaBeta(self, state, depth, agent, alpha, beta):
-        if agent == state.getNumAgents():
-            depth -= 1
-            agent = 0
-        if state.isOver() or depth == 0:
-            val_act = [self.evaluationFunction(state), None]
-            return val_act
-        if agent == 0:
-            val_act = [float('-inf'), None]
-            for action in state.getLegalActions(agent):
-                successor = state.generateSuccessor(agent, action)
-                score = self.AlphaBeta(
-                    successor, depth, agent + 1, alpha, beta)
-                if val_act[0] < score[0]:
-                    val_act = [score[0], action]
-                if val_act[0] >= beta:
-                    return val_act
-                alpha = max(alpha, score[0])
-        else:
-            val_act = [float('inf'), None]
-            for action in state.getLegalActions(agent):
-                successor = state.generateSuccessor(agent, action)
-                score = self.AlphaBeta(
-                    successor, depth, agent + 1, alpha, beta)
-                if val_act[0] > score[0]:
-                    val_act = [score[0], action]
-                if val_act[0] <= alpha:
-                    return val_act
-                beta = min(beta, score[0])
-        return val_act
-
     def evaluationFunction(self, state):
-        if state.isOnBlueTeam(self.index):
+        if state.isOnBlueTeam(3):
             foods = state.getRedFood().asList()
-            pos = state.getAgentPosition(self.index)
-            # caps = state.getRedCapsules()
-            # ghosts = [state.getAgentPosition(x)
-            #           for x in state.getRedTeamIndices()]
-            # g_dis = 0
-            f_dis = float('inf')
-            # c_dis = float('inf')
-            # g_dis = min([self.getMazeDistance(pos, ghost)
-            #              for ghost in ghosts])
-            f_dis = min([self.getMazeDistance(pos, food) for food in foods])
-            # c_dis = min([self.getMazeDistance(pos, capsule)
-            #              for capsule in caps])
-            # if g_dis == 0:
-            #     g_dis += 1
-            score = f_dis
+            pos = state.getAgentPosition(3)
+            ghosts = [state.getAgentPosition(x)
+                      for x in state.getRedTeamIndices()]
+            g_dis = float('inf')
+            f_dis = 0
+            for ghost in ghosts:
+                g_dis += self.getMazeDistance(pos, ghost)
+            for food in foods:
+                f_dis += self.getMazeDistance(pos, food)
+            nf = min([self.getMazeDistance(pos, food) for food in foods])
+            score = 1 / nf - len(foods)
         else:
             foods = state.getBlueFood().asList()
             pos = state.getAgentPosition(self.index)
-            # caps = state.getBlueCapsules()
-            # ghosts = [state.getAgentPosition(x)
-            #           for x in state.getBlueTeamIndices()]
-            # g_dis = 0
-            f_dis = float('inf')
-            # c_dis = float('inf')
-            # g_dis = min([self.getMazeDistance(pos, ghost)
-            #              for ghost in ghosts])
-            f_dis = min([self.getMazeDistance(pos, food) for food in foods])
-            # c_dis = min([self.getMazeDistance(pos, capsule)
-            #              for capsule in caps])
-            # if g_dis == 0:
-            #     g_dis += 1
-            score = f_dis
-        # p = currentGameState.getAgentPosition(self.index)
-        # foods = currentGameState.getFood().asList()
-        # capsules = currentGameState.getCapsules()
-        # ghostStates = currentGameState.getAgentPosition(self.index)
+            ghosts = [state.getAgentPosition(x)
+                      for x in state.getBlueTeamIndices()]
+            g_dis = float('inf')
+            f_dis = 0
+            for ghost in ghosts:
+                g_dis += self.getMazeDistance(pos, ghost)
+            for food in foods:
+                f_dis += self.getMazeDistance(pos, food)
+            nf = min([self.getMazeDistance(pos, food) for food in foods])
+            score = 0
+        return score
+
+    def getAction(self, state):
+        action = self.minimaxDecision(state, 1, self.index, self.index, 0)[1]
+        return action
+
+    def minimaxDecision(self, state, depth, agent, init, count):
+        if agent == init and count != 0:
+            depth -= 1
+        if agent == 4:
+            agent = 0
+        elif agent == 5:
+            agent = 1
+        if state.isOver() or depth == 0:
+            return (self.evaluationFunction(state), Directions.STOP)
+        actions = [action for action in state.getLegalActions(
+            agent) if action != Directions.STOP]
+        if agent == init:
+            minimax = [(self.minimaxDecision(state.generateSuccessor(
+                agent, action), depth, agent + 1, init, count + 1)[0], action) for action in actions]
+            minimax.sort(key=lambda tup: tup[0], reverse=True)
+            return minimax[0]
+        else:
+            minimax = [(self.minimaxDecision(state.generateSuccessor(
+                agent, action), depth, agent + 1, init, count + 1)[0], action) for action in actions]
+            minimax.sort(key=lambda tup: tup[0])
+            return minimax[0]
+
+        # p = currentstate.getAgentPosition(self.index)
+        # foods = currentstate.getFood().asList()
+        # capsules = currentstate.getCapsules()
+        # ghostStates = currentstate.getAgentPosition(self.index)
         # gp = [ghost.getPosition() for ghost in ghostStates]
         # scaredTimes = [ghost.getScaredTimer() for ghost in ghostStates]
         # g_dis = 0
@@ -212,6 +192,5 @@ class AlphaBetaAgent(ReflexCaptureAgent):
         #         g_dis += manhattan(p, gp[i])
         # if g_dis == 0:
         #     g_dis += 1
-        # score = currentGameState.getScore() + 1 / f_dis + 1 / \
+        # score = currentstate.getScore() + 1 / f_dis + 1 / \
         #     h_dis + 1 / c_dis - 1 / g_dis
-        return score

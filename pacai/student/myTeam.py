@@ -1,4 +1,3 @@
-import random
 from pacai.util import reflection
 from pacai.agents.capture.reflex import ReflexCaptureAgent
 from pacai.util import counter
@@ -113,9 +112,9 @@ class AlphaBetaAgent(ReflexCaptureAgent):
             if c_dis:
                 nc = min(c_dis)
             if state.isOnRedSide(pos):
-                score = 1/nf + 1/nc - 0.3/ng - len(foods)
+                score = 1 / nf + 1 / nc - 0.3 / ng - len(foods)
             else:
-                score = 1/nf + 1/nc - 10 - len(foods)
+                score = 1 / nf + 1 / nc - 10 - len(foods)
         else:
             foods = state.getBlueFood().asList()
             capsules = state.getBlueCapsules()
@@ -131,9 +130,9 @@ class AlphaBetaAgent(ReflexCaptureAgent):
             if c_dis:
                 nc = min(c_dis)
             if state.isOnBlueSide(pos):
-                score = 1/nf + 1/nc - 0.3/ng - len(foods)
+                score = 1 / nf + 1 / nc - 0.3 / ng - len(foods)
             else:
-                score = 1/nf + 1/nc - 10 - len(foods)
+                score = 1 / nf + 1 / nc - 10 - len(foods)
         return score
 
     def getAction(self, state):
@@ -153,15 +152,15 @@ class AlphaBetaAgent(ReflexCaptureAgent):
             agent) if action != Directions.STOP]
         if agent == init:
             minimax = [(self.minimaxDecision(state.generateSuccessor(
-                agent, action), depth, agent + 1, init, count + 1)[0], action) for action in actions]
+                agent, act), depth, agent + 1, init, count + 1)[0], act) for act in actions]
             minimax.sort(key=lambda tup: tup[0], reverse=True)
             return minimax[0]
         else:
             if abs(init - agent - 1) != 2:
                 minimax = [(self.minimaxDecision(state.generateSuccessor(
-                    agent, action), depth, agent + 1, init, count + 1)[0], action) for action in actions]
+                    agent, act), depth, agent + 1, init, count + 1)[0], act) for act in actions]
             else:
                 minimax = [(self.minimaxDecision(state.generateSuccessor(
-                    agent, action), depth, agent + 2, init, count + 1)[0], action) for action in actions]
+                    agent, act), depth, agent + 2, init, count + 1)[0], act) for act in actions]
             minimax.sort(key=lambda tup: tup[0])
             return minimax[0]

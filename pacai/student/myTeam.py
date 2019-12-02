@@ -84,33 +84,59 @@ class AlphaBetaAgent(ReflexCaptureAgent):
 
     def evaluationFunction(self, state):
         pos = state.getAgentPosition(self.index)
-        g_dis = 0
-        f_dis = 0
+        nf = 1
+        ng = 1
+        np = 1
         if state.isOnBlueTeam(self.index):
-            if state.isOnRedSide(self.index):
-                ghosts = [state.getAgentPosition(g)
-                        for g in state.getRedTeamIndices()]
+            ghosts = [state.getAgentPosition(g)
+                for g in state.getRedTeamIndices() if state.isOnRedSide(state.getAgentPosition(g))]
+            pacman = [state.getAgentPosition(p)
+                for p in state.getRedTeamIndices() if state.isOnBlueSide(state.getAgentPosition(p))]
             foods = state.getRedFood().asList()
             capsules = state.getRedCapsules()
-            for ghost in ghosts:
-                g_dis += self.getMazeDistance(pos, ghost)
-            for food in foods:
-                f_dis += self.getMazeDistance(pos, food)
-            nf = min([self.getMazeDistance(pos, food) for food in foods])
-            ng = min([self.getMazeDistance(pos, ghost) for ghost in ghosts])
-            score = 1 / nf - len(foods)
+            f_dis = [self.getMazeDistance(pos, food) for food in foods]
+            g_dis = [self.getMazeDistance(pos, ghost) for ghost in ghosts]
+            p_dis = [self.getMazeDistance(pos, pac) for pac in pacman]
+            if f_dis:
+                nf = min(f_dis)
+            if g_dis:
+                ng = min(g_dis)
+            if p_dis:
+                np = min(p_dis)
+            if state.isOnRedSide(pos):
+                score = 1 / nf - 1 / ng - len(foods)
+            elif p_dis:
+                score = 1 / np - len(p_dis)
+            else:
+                score = 1 / nf - len(foods)
+            # g_dis = 0
+            # f_dis = 0
+            # for ghost in ghosts:
+            #     g_dis += self.getMazeDistance(pos, ghost)
+            # for food in foods:
+            #     f_dis += self.getMazeDistance(pos, food)
         else:
+            ghosts = [state.getAgentPosition(g)
+                for g in state.getBlueTeamIndices() if state.isOnBlueSide(state.getAgentPosition(g))]
+            pacman = [state.getAgentPosition(p)
+                for p in state.getRedTeamIndices() if state.isOnBlueSide(state.getAgentPosition(p))]
             foods = state.getBlueFood().asList()
             capsules = state.getBlueCapsules()
-            ghosts = [state.getAgentPosition(x)
-                        for x in state.getBlueTeamIndices()]
-            for ghost in ghosts:
-                g_dis += self.getMazeDistance(pos, ghost)
-            for food in foods:
-                f_dis += self.getMazeDistance(pos, food)
-            nf = min([self.getMazeDistance(pos, food) for food in foods])
-            ng = min([self.getMazeDistance(pos, ghost) for ghost in ghosts])
-            score = 1 / nf - len(foods)
+            f_dis = [self.getMazeDistance(pos, food) for food in foods]
+            g_dis = [self.getMazeDistance(pos, ghost) for ghost in ghosts]
+            p_dis = [self.getMazeDistance(pos, pac) for pac in pacman]
+            if f_dis:
+                nf = min(f_dis)
+            if g_dis:
+                ng = min(g_dis)
+            if p_dis:
+                np = min(p_dis)
+            if state.isOnBlueSide(pos):
+                score = 1 / nf - 1 / ng - len(foods)
+            elif p_dis:
+                score = 1 / np - len(p_dis)
+            else:
+                score = 1 / nf - len(foods)
         return score
 
     def getAction(self, state):

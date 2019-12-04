@@ -60,22 +60,12 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         else:
             if state.isOnBlueTeam(self.index):
                 foods = state.getBlueFood().asList()
-                if len(foods) >= numBlueFood:
-                    features['stayFront'] = self.getMazeDistance(
-                        myPos, foods[0])
-                else:
-                    capsules = state.getBlueCapsules()
-                    features['stayCap'] = self.getMazeDistance(
-                        myPos, capsules[0])
+                features['stayFront'] = self.getMazeDistance(
+                    myPos, foods[0])
             else:
                 foods = state.getRedFood().asList()
-                if len(foods) >= numRedFood:
-                    features['stayFront'] = self.getMazeDistance(
-                        myPos, foods[-1])
-                else:
-                    capsules = state.getRedCapsules()
-                    features['stayCap'] = self.getMazeDistance(
-                        myPos, capsules[0])
+                features['stayFront'] = self.getMazeDistance(
+                    myPos, foods[-1])
 
         if (action == Directions.STOP):
             features['stop'] = 1
@@ -105,9 +95,6 @@ class AlphaBetaAgent(ReflexCaptureAgent):
         super().__init__(index)
 
     def evaluationFunction(self, state):
-        # pacman = [state.getAgentPosition(p)
-        #     for p in state.getRedTeamIndices() if state.isOnBlueSide(state.getAgentPosition(p))]
-        # p_dis = [self.getMazeDistance(pos, pac) for pac in pacman]
         pos = state.getAgentPosition(self.index)
         nf = 0.5
         ng = 0.5
@@ -127,7 +114,7 @@ class AlphaBetaAgent(ReflexCaptureAgent):
             if c_dis:
                 nc = min(c_dis)
             if state.isOnRedSide(pos):
-                score = 1 / nf + 1 / nc - 0.3 / ng - len(foods)
+                score = 1 / nf + 1 / nc - 1 / ng - len(foods)
             else:
                 score = 1 / nf + 1 / nc - 10 - len(foods)
         else:
@@ -145,7 +132,7 @@ class AlphaBetaAgent(ReflexCaptureAgent):
             if c_dis:
                 nc = min(c_dis)
             if state.isOnBlueSide(pos):
-                score = 1 / nf + 1 / nc - 0.3 / ng - len(foods)
+                score = 1 / nf + 1 / nc - 1 / ng - len(foods)
             else:
                 score = 1 / nf + 1 / nc - 10 - len(foods)
         return score
@@ -155,13 +142,10 @@ class AlphaBetaAgent(ReflexCaptureAgent):
         return action
 
     def minimaxDecision(self, state, depth, agent, init, count):
-        print(agent, depth, count)
         if agent == init and count != 0:
             depth -= 1
         if agent == 4:
             agent = 0
-        elif agent == 5:
-            agent = 1
         if state.isOver() or depth == 0:
             return (self.evaluationFunction(state), Directions.STOP)
         actions = [action for action in state.getLegalActions(
@@ -170,15 +154,9 @@ class AlphaBetaAgent(ReflexCaptureAgent):
             minimax = [(self.minimaxDecision(state.generateSuccessor(
                 agent, act), depth, agent + 1, init, count + 1)[0], act) for act in actions]
             minimax.sort(key=lambda tup: tup[0], reverse=True)
-            print(minimax, agent)
             return minimax[0]
         else:
-            if abs(init - agent - 1) != 2:
-                minimax = [(self.minimaxDecision(state.generateSuccessor(
-                    agent, act), depth, agent + 1, init, count + 1)[0], act) for act in actions]
-            else:
-                minimax = [(self.minimaxDecision(state.generateSuccessor(
-                    agent, act), depth, agent + 2, init, count + 1)[0], act) for act in actions]
-            print(minimax, agent)
+            minimax = [(self.minimaxDecision(state.generateSuccessor(
+                agent, act), depth, agent + 1, init, count + 1)[0], act) for act in actions]
             minimax.sort(key=lambda tup: tup[0])
             return minimax[0]

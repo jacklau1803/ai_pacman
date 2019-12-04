@@ -38,8 +38,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
         myState = successor.getAgentState(self.index)
         myPos = myState.getPosition()
-        numBlueFood = 20
-        numRedFood = 20
 
         # Computes whether we're on defense (1) or offense (0).
         features['onDefense'] = 1
